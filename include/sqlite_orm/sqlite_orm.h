@@ -879,6 +879,7 @@ namespace sqlite_orm {
         struct order_by_t {
             O o;
             int ascDesc = 0;   //  1: asc, -1: desc
+            bool rand = false;
             
             order_by_t():o(nullptr){}
             
@@ -898,6 +899,12 @@ namespace sqlite_orm {
                 auto res = *this;
                 res.ascDesc = -1;
                 return res;
+            }
+            
+            order_by_t<O> random() {
+        	auto res = *this;
+        	res.rand = true;
+        	return res;
             }
         };
         
@@ -3842,6 +3849,12 @@ namespace sqlite_orm {
         template<class O>
         std::string process_order_by(conditions::order_by_t<O> &orderBy) {
             std::stringstream ss;
+            
+            if (orderBy.rand) {
+        	ss << "RANDOM() ";
+        	return ss.str();
+            }
+            
             auto columnName = this->string_from_expression(orderBy.o);
             ss << columnName << " ";
             switch(orderBy.ascDesc){
